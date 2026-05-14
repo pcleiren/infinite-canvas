@@ -1,19 +1,26 @@
-import { SITE_ACCESS_COOKIE } from "../lib/site-session";
+const SITE_ACCESS_COOKIE = "site_access";
 
-export default {
-  fetch(request: Request): Response {
-    if (request.method !== "POST" && request.method !== "GET") {
-      return new Response("Method Not Allowed", { status: 405 });
+function handleLogout(request: Request): Response {
+  if (request.method !== "POST" && request.method !== "GET") {
+    return new Response("Method Not Allowed", { status: 405 });
+  }
+  const secure = process.env.VERCEL === "1" ? "; Secure" : "";
+  return Response.json(
+    { ok: true },
+    {
+      status: 200,
+      headers: {
+        "Set-Cookie": `${SITE_ACCESS_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`,
+      },
     }
-    const secure = process.env.VERCEL === "1" ? "; Secure" : "";
-    return Response.json(
-      { ok: true },
-      {
-        status: 200,
-        headers: {
-          "Set-Cookie": `${SITE_ACCESS_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`,
-        },
-      }
-    );
-  },
-};
+  );
+}
+
+export default function handler(request: Request): Response {
+  try {
+    return handleLogout(request);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return Response.json({ ok: false, error: `Logout error: ${message}` }, { status: 500 });
+  }
+}
