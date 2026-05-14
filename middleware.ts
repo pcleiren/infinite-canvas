@@ -2,9 +2,13 @@ import { next, rewrite } from "@vercel/functions";
 import { getSitePasswordCandidates } from "./lib/auth-env";
 import { SITE_ACCESS_COOKIE, verifyAccessTokenAny } from "./lib/site-session";
 
-/** Alleen deze paden door Edge Middleware — voorkomt tweede pass op /index.html na rewrite. */
+/**
+ * Paths that run Edge Middleware. Include `/api/*` so we can immediately `next()`
+ * to the serverless route — if matcher were ever skipped, `/api/login` would hit
+ * auth redirects and break POST + JSON (client shows generic "Sign-in failed").
+ */
 export const config = {
-  matcher: ["/", "/login", "/login/:path*", "/index.html"],
+  matcher: ["/api/:path*", "/", "/login", "/login/:path*", "/index.html"],
 };
 
 const LOGIN_SPA_HEADER = "x-login-spa";
@@ -33,9 +37,14 @@ function rewriteLoginToIndex(request: Request): Response {
 }
 
 export default async function middleware(request: Request): Promise<Response> {
-  const candidates = getSitePasswordCandidates();
   const url = new URL(request.url);
   const path = url.pathname;
+
+  if (path.startsWith("/api/")) {
+    return next();
+  }
+
+  const candidates = getSitePasswordCandidates();
 
   if (path === "/index.html" && request.headers.get(LOGIN_SPA_HEADER) === "1") {
     return next();

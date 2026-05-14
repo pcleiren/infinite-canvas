@@ -4,6 +4,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+async function readLoginErrorMessage(res: Response): Promise<string> {
+  const text = await res.text();
+  try {
+    const data = JSON.parse(text) as { error?: unknown };
+    if (typeof data.error === "string") {
+      return data.error;
+    }
+  } catch {
+    /* not JSON */
+  }
+  const snippet = text.replace(/\s+/g, " ").trim().slice(0, 140);
+  if (snippet) {
+    return `Request failed (${res.status}): ${snippet}`;
+  }
+  return `Request failed (${res.status}).`;
+}
+
 export function LoginPage() {
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
@@ -24,16 +41,13 @@ export function LoginPage() {
         credentials: "include",
         body: JSON.stringify({ password: password.trim() }),
       });
-      const data: unknown = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const msg =
-          typeof data === "object" && data !== null && "error" in data && typeof (data as { error: unknown }).error === "string"
-            ? (data as { error: string }).error
-            : "Sign-in failed.";
-        setError(msg);
+        setError(await readLoginErrorMessage(res));
         return;
       }
       globalThis.location.assign("/");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Network error.");
     } finally {
       setPending(false);
     }
