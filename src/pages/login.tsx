@@ -30,6 +30,9 @@ export function LoginPage() {
     e.preventDefault();
     setError(null);
     setPending(true);
+    const ctl = new AbortController();
+    const timeoutMs = 45_000;
+    const timer = globalThis.setTimeout(() => ctl.abort(), timeoutMs);
     try {
       const loginUrl =
         typeof globalThis.location !== "undefined"
@@ -40,15 +43,27 @@ export function LoginPage() {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ password: password.trim() }),
+        signal: ctl.signal,
       });
       if (!res.ok) {
         setError(await readLoginErrorMessage(res));
         return;
       }
+      await res.json().catch(() => {
+        /* drain body so the connection can close cleanly */
+      });
       globalThis.location.assign("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Network error.");
+      const name = err instanceof Error ? err.name : "";
+      const isAbort =
+        (err instanceof DOMException && err.name === "AbortError") || name === "AbortError";
+      if (isAbort) {
+        setError(`No response after ${timeoutMs / 1000}s. The server may be busy — try again.`);
+      } else {
+        setError(err instanceof Error ? err.message : "Network error.");
+      }
     } finally {
+      globalThis.clearTimeout(timer);
       setPending(false);
     }
   }
