@@ -1,4 +1,4 @@
-import { next } from "@vercel/functions";
+import { next, rewrite } from "@vercel/functions";
 import { SITE_ACCESS_COOKIE, verifyAccessToken } from "./lib/site-session";
 
 function getPassword(): string | undefined {
@@ -44,12 +44,15 @@ function isPublicAsset(pathname: string): boolean {
 
 export default async function middleware(request: Request): Promise<Response> {
   const pwd = getPassword();
-  if (!pwd) {
-    return next();
-  }
-
   const url = new URL(request.url);
   const path = url.pathname;
+
+  if (!pwd) {
+    if (path === "/login" || path.startsWith("/login/")) {
+      return rewrite(new URL("/index.html", request.url));
+    }
+    return next();
+  }
 
   if (path === "/api/login" || path === "/api/logout") {
     return next();
@@ -64,7 +67,7 @@ export default async function middleware(request: Request): Promise<Response> {
     if (await verifyAccessToken(loginToken, pwd)) {
       return Response.redirect(new URL("/", request.url).href, 302);
     }
-    return next();
+    return rewrite(new URL("/index.html", request.url));
   }
 
   const token = parseCookieHeader(request.headers.get("cookie"), SITE_ACCESS_COOKIE);
