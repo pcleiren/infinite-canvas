@@ -5,8 +5,6 @@ import {
   timingSafeEqualUtf8,
 } from "../lib/site-session";
 
-export const config = { runtime: "edge" as const };
-
 function getPassword(): string | undefined {
   return (
     process.env.SITE_BASIC_AUTH_PASSWORD?.trim() ||
