@@ -15,7 +15,8 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./*"]
+      "~/*": ["./*"],
+      "@/*": ["./src/*"]
     },
 
     /* Linting */
@@ -26,5 +27,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["vite.config.ts", "middleware.ts"]
+  "include": ["vite.config.ts", "middleware.ts", "api/**/*.ts", "lib/**/*.ts"]
 }

@@ -1,70 +1,76 @@
 import { next } from "@vercel/functions";
-
-const DEFAULT_BASIC_USER = "eddie";
+import { SITE_ACCESS_COOKIE, verifyAccessToken } from "./lib/site-session";
 
 function getPassword(): string | undefined {
-  const v =
+  return (
     process.env.SITE_BASIC_AUTH_PASSWORD?.trim() ||
     process.env.BASIC_AUTH_PASSWORD?.trim() ||
-    process.env.VERCEL_BASIC_AUTH_PASSWORD?.trim();
-  return v || undefined;
-}
-
-function getUser(): string {
-  return (
-    process.env.SITE_BASIC_AUTH_USER?.trim() ||
-    process.env.BASIC_AUTH_USER?.trim() ||
-    process.env.VERCEL_BASIC_AUTH_USER?.trim() ||
-    DEFAULT_BASIC_USER
+    process.env.VERCEL_BASIC_AUTH_PASSWORD?.trim()
   );
 }
 
-function basicAuthEnabled(): boolean {
-  return Boolean(getPassword()?.length);
+function parseCookieHeader(header: string | null, name: string): string | undefined {
+  if (!header) {
+    return;
+  }
+  for (const part of header.split(";")) {
+    const idx = part.indexOf("=");
+    if (idx === -1) {
+      continue;
+    }
+    const k = part.slice(0, idx).trim();
+    if (k !== name) {
+      continue;
+    }
+    return decodeURIComponent(part.slice(idx + 1).trim());
+  }
 }
 
-function unauthorized(): Response {
-  return new Response("Authentication required", {
-    status: 401,
-    headers: {
-      "WWW-Authenticate": 'Basic realm="Protected"',
-      "Content-Type": "text/plain; charset=utf-8",
-    },
-  });
+function isPublicAsset(pathname: string): boolean {
+  if (pathname.startsWith("/assets/")) {
+    return true;
+  }
+  if (pathname.startsWith("/artworks/")) {
+    return true;
+  }
+  if (pathname === "/eddie-laan-hero.png" || pathname === "/vite.svg") {
+    return true;
+  }
+  if (pathname.endsWith(".js") || pathname.endsWith(".css") || pathname.endsWith(".map")) {
+    return true;
+  }
+  return false;
 }
 
-/** Geen matcher: alle routes (incl. assets) door middleware — nodig voor volledige Basic Auth. */
-export default function middleware(request: Request): Response {
-  if (!basicAuthEnabled()) {
+export default async function middleware(request: Request): Promise<Response> {
+  const pwd = getPassword();
+  if (!pwd) {
     return next();
   }
 
-  const expectedUser = getUser();
-  const expectedPass = getPassword() ?? "";
+  const url = new URL(request.url);
+  const path = url.pathname;
 
-  const header = request.headers.get("authorization");
-  if (!header?.startsWith("Basic ")) {
-    return unauthorized();
-  }
-
-  let decoded: string;
-  try {
-    decoded = atob(header.slice(6));
-  } catch {
-    return unauthorized();
-  }
-
-  const colon = decoded.indexOf(":");
-  if (colon === -1) {
-    return unauthorized();
-  }
-
-  const user = decoded.slice(0, colon);
-  const pass = decoded.slice(colon + 1);
-
-  if (user === expectedUser && pass === expectedPass) {
+  if (path === "/api/login" || path === "/api/logout") {
     return next();
   }
 
-  return unauthorized();
+  if (isPublicAsset(path)) {
+    return next();
+  }
+
+  if (path === "/login" || path.startsWith("/login/")) {
+    const loginToken = parseCookieHeader(request.headers.get("cookie"), SITE_ACCESS_COOKIE);
+    if (await verifyAccessToken(loginToken, pwd)) {
+      return Response.redirect(new URL("/", request.url).href, 302);
+    }
+    return next();
+  }
+
+  const token = parseCookieHeader(request.headers.get("cookie"), SITE_ACCESS_COOKIE);
+  if (await verifyAccessToken(token, pwd)) {
+    return next();
+  }
+
+  return Response.redirect(new URL("/login", request.url).href, 302);
 }

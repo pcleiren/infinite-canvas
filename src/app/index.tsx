@@ -17,7 +17,7 @@ function heroPhotoHref(): string {
   return `${import.meta.env.BASE_URL}eddie-laan-hero.png`;
 }
 
-export function App() {
+export function CanvasApp() {
   const [media] = React.useState<MediaItem[]>(manifest);
   const [textureProgress, setTextureProgress] = React.useState(0);
   const [heroSrc] = React.useState(heroPhotoHref);
