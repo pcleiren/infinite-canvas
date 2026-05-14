@@ -1,7 +1,6 @@
 const enc = new TextEncoder();
 
-/** HttpOnly cookie name set by `/api/login`. */
-export const SITE_ACCESS_COOKIE = "site_access";
+/** HttpOnly cookie set by `/api/login`. If you change HMAC/token layout, update the copy in `api/login.ts`. */
 
 /** Session length (ms). */
 export const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
