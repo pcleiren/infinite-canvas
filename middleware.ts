@@ -16,10 +16,7 @@ function unauthorized(): Response {
   });
 }
 
-export const config = {
-  matcher: "/:path*",
-};
-
+/** Geen matcher: alle routes (incl. assets) door middleware — nodig voor volledige Basic Auth. */
 export default function middleware(request: Request): Response {
   if (!basicAuthEnabled()) {
     return next();

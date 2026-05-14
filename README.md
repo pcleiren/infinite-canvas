@@ -43,6 +43,8 @@ npx tsx scripts/download-artworks.ts
    - In Vercel: **Project → Settings → Environment Variables**
    - Zet **`VERCEL_BASIC_AUTH_PASSWORD`** op het gewenste wachtwoord (verplicht om beveiliging aan te zetten).
    - Optioneel: **`VERCEL_BASIC_AUTH_USER`** (default: `eddie`).
+   - Zet de variabele minstens op **Production** én **Preview** als je ook preview-URL’s wilt afschermen (alleen Production = previews blijven open).
+   - Na het toevoegen of wijzigen van variabelen: **Deployments → … → Redeploy** (of push een nieuwe commit), anders draait de oude build nog zonder de nieuwe waarden.
    - Zonder `VERCEL_BASIC_AUTH_PASSWORD` blijft de site **openbaar** (handig voor testen).
 
 De browser vraagt dan om gebruikersnaam en wachtwoord voordat HTML, JS en `public`-assets worden geladen.
