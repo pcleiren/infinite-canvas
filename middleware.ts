@@ -2,8 +2,25 @@ import { next } from "@vercel/functions";
 
 const DEFAULT_BASIC_USER = "eddie";
 
+function getPassword(): string | undefined {
+  const v =
+    process.env.SITE_BASIC_AUTH_PASSWORD?.trim() ||
+    process.env.BASIC_AUTH_PASSWORD?.trim() ||
+    process.env.VERCEL_BASIC_AUTH_PASSWORD?.trim();
+  return v || undefined;
+}
+
+function getUser(): string {
+  return (
+    process.env.SITE_BASIC_AUTH_USER?.trim() ||
+    process.env.BASIC_AUTH_USER?.trim() ||
+    process.env.VERCEL_BASIC_AUTH_USER?.trim() ||
+    DEFAULT_BASIC_USER
+  );
+}
+
 function basicAuthEnabled(): boolean {
-  return Boolean(process.env.VERCEL_BASIC_AUTH_PASSWORD?.length);
+  return Boolean(getPassword()?.length);
 }
 
 function unauthorized(): Response {
@@ -22,8 +39,8 @@ export default function middleware(request: Request): Response {
     return next();
   }
 
-  const expectedUser = process.env.VERCEL_BASIC_AUTH_USER ?? DEFAULT_BASIC_USER;
-  const expectedPass = process.env.VERCEL_BASIC_AUTH_PASSWORD ?? "";
+  const expectedUser = getUser();
+  const expectedPass = getPassword() ?? "";
 
   const header = request.headers.get("authorization");
   if (!header?.startsWith("Basic ")) {

@@ -37,17 +37,20 @@ npx tsx scripts/download-artworks.ts
 
 ## Vercel (hosting + wachtwoord)
 
-1. **Project op Vercel**: importeer deze GitHub-repo in [Vercel](https://vercel.com/new) (of `npx vercel` vanaf je machine met Node 20–24 als de CLI klaagt over je Node-versie).
-2. **Build**: standaard `npm run build`, outputmap **`dist`** (zie `vercel.json`).
-3. **Optioneel wachtwoord (HTTP Basic Auth)** op alle routes:
-   - In Vercel: **Project → Settings → Environment Variables**
-   - Zet **`VERCEL_BASIC_AUTH_PASSWORD`** op het gewenste wachtwoord (verplicht om beveiliging aan te zetten).
-   - Optioneel: **`VERCEL_BASIC_AUTH_USER`** (default: `eddie`).
-   - Zet de variabele minstens op **Production** én **Preview** als je ook preview-URL’s wilt afschermen (alleen Production = previews blijven open).
-   - Na het toevoegen of wijzigen van variabelen: **Deployments → … → Redeploy** (of push een nieuwe commit), anders draait de oude build nog zonder de nieuwe waarden.
-   - Zonder `VERCEL_BASIC_AUTH_PASSWORD` blijft de site **openbaar** (handig voor testen).
+1. **Project op Vercel**: importeer deze GitHub-repo in [Vercel](https://vercel.com/new) (of `npx vercel` met Node 20–24 als de CLI over je Node-versie klaagt).
+2. **Build**: **Framework preset = Vite** (staat in `vercel.json` als `"framework": "vite"`). Build-commando blijft **`npm run build`** (Vite schrijft naar `dist`).
+3. **Belangrijk — anders werkt geen wachtwoord via `middleware.ts`:** onder **Project → Settings → General → Build & Output** mag **Output Directory** niet handmatig op `dist` staan als dat “alleen statische files” oplevert zonder Edge Middleware. Laat **Output Directory leeg** (default voor Vite), zodat Vercel de volledige Vite-build inclusief **Routing Middleware** gebruikt.
+4. **HTTP Basic Auth** (root `middleware.ts`):
+   - **Settings → Environment Variables**
+   - Aanbevolen: **`SITE_BASIC_AUTH_PASSWORD`** (wachtwoord). Ook ondersteund: `BASIC_AUTH_PASSWORD` of (legacy) `VERCEL_BASIC_AUTH_PASSWORD`.
+   - Optioneel gebruikersnaam: **`SITE_BASIC_AUTH_USER`** (default: `eddie`), of `BASIC_AUTH_USER` / `VERCEL_BASIC_AUTH_USER`.
+   - Zet de variabelen op **Production** én **Preview** als je alle deployment-URL’s wilt afschermen.
+   - Na wijzigingen: **Deployments → Redeploy** zodat de nieuwe env zichtbaar is op de edge.
+   - Zonder wachtwoord-env blijft de site openbaar.
 
-De browser vraagt dan om gebruikersnaam en wachtwoord voordat HTML, JS en `public`-assets worden geladen.
+**Als er nog steeds geen browser-login komt:** controleer stap 3 (Output Directory). Alternatief op Vercel zelf: **Password Protection** onder *Deployment Protection* (beschikbaar op o.a. Pro) — zie [Password Protection](https://vercel.com/docs/deployment-protection/methods-to-protect-deployments/password-protection).
+
+De browser vraagt bij Basic Auth om gebruikersnaam en wachtwoord voordat HTML, JS en `public`-assets worden geladen.
 
 ## Tech Stack
 
