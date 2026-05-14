@@ -37,16 +37,22 @@ export function LoginPage() {
 
   return (
     <div className="dark min-h-svh bg-background font-sans text-foreground antialiased">
-      <div className="flex min-h-svh items-center justify-center p-6">
-        <Card className="w-full max-w-sm border-zinc-800 bg-zinc-950 shadow-xl">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-xl tracking-tight">Eddie Laan</CardTitle>
-            <CardDescription className="text-zinc-400">Voer het site-wachtwoord in om verder te gaan.</CardDescription>
+      <div className="flex min-h-svh items-center justify-center px-5 py-10 sm:px-8">
+        <Card className="w-full max-w-[min(100%,32rem)] border-zinc-800 bg-zinc-950 shadow-2xl sm:max-w-[36rem]">
+          <CardHeader className="space-y-3 px-8 pb-2 pt-10 sm:px-10 sm:pt-12">
+            <CardTitle className="text-[clamp(1.65rem,4vw,2.35rem)] font-semibold leading-tight tracking-tight">
+              Eddie Laan
+            </CardTitle>
+            <CardDescription className="text-[15px] leading-relaxed text-zinc-400 sm:text-[17px]">
+              Voer het site-wachtwoord in om verder te gaan.
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form className="space-y-4" onSubmit={onSubmit}>
-              <div className="space-y-2">
-                <Label htmlFor="site-password">Wachtwoord</Label>
+          <CardContent className="px-8 pb-10 pt-2 sm:px-10 sm:pb-12">
+            <form className="space-y-6" onSubmit={onSubmit}>
+              <div className="space-y-3">
+                <Label htmlFor="site-password" className="text-[15px] sm:text-[16px]">
+                  Wachtwoord
+                </Label>
                 <Input
                   id="site-password"
                   name="password"
@@ -57,11 +63,15 @@ export function LoginPage() {
                   placeholder="••••••••"
                   required
                   disabled={pending}
-                  className="border-zinc-700 bg-zinc-900/80"
+                  className="h-12 border-zinc-700 bg-zinc-900/80 px-4 text-[16px] sm:h-14 sm:px-5 sm:text-[17px]"
                 />
               </div>
-              {error ? <p className="text-sm text-red-400">{error}</p> : null}
-              <Button type="submit" className="w-full" disabled={pending}>
+              {error ? <p className="text-[15px] text-red-400 sm:text-[16px]">{error}</p> : null}
+              <Button
+                type="submit"
+                className="h-12 w-full text-[16px] font-medium sm:h-14 sm:text-[17px]"
+                disabled={pending}
+              >
                 {pending ? "Bezig…" : "Aanmelden"}
               </Button>
             </form>
