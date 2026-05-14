@@ -1,3 +1,4 @@
+import { getSitePasswordCandidates } from "../lib/auth-env";
 import {
   SITE_ACCESS_COOKIE,
   SESSION_TTL_MS,
@@ -5,18 +6,13 @@ import {
   timingSafeEqualUtf8,
 } from "../lib/site-session";
 
-function getPassword(): string | undefined {
-  return (
-    process.env.SITE_BASIC_AUTH_PASSWORD?.trim() ||
-    process.env.BASIC_AUTH_PASSWORD?.trim() ||
-    process.env.VERCEL_BASIC_AUTH_PASSWORD?.trim()
-  );
-}
-
 export default async function handler(request: Request): Promise<Response> {
-  const pwd = getPassword();
-  if (!pwd) {
-    return Response.json({ ok: false, error: "SITE_BASIC_AUTH_PASSWORD is not configured." }, { status: 503 });
+  const candidates = getSitePasswordCandidates();
+  if (candidates.length === 0) {
+    return Response.json(
+      { ok: false, error: "Geen site-wachtwoord in omgeving (SITE_ACCESS_PASSWORD of SITE_BASIC_AUTH_PASSWORD / …)." },
+      { status: 503 }
+    );
   }
 
   if (request.method !== "POST") {
@@ -30,13 +26,23 @@ export default async function handler(request: Request): Promise<Response> {
     return Response.json({ ok: false, error: "Ongeldige JSON." }, { status: 400 });
   }
 
-  const password = typeof body === "object" && body !== null && "password" in body ? String((body as { password: unknown }).password) : "";
+  const raw =
+    typeof body === "object" && body !== null && "password" in body ? String((body as { password: unknown }).password) : "";
+  const password = raw.trim();
 
-  if (!timingSafeEqualUtf8(password, pwd)) {
+  let matched: string | undefined;
+  for (const c of candidates) {
+    if (timingSafeEqualUtf8(password, c)) {
+      matched = c;
+      break;
+    }
+  }
+
+  if (!matched) {
     return Response.json({ ok: false, error: "Onjuist wachtwoord." }, { status: 401 });
   }
 
-  const token = await createAccessToken(pwd, SESSION_TTL_MS);
+  const token = await createAccessToken(matched, SESSION_TTL_MS);
   const maxAge = Math.floor(SESSION_TTL_MS / 1000);
   const secure = process.env.VERCEL === "1" ? "; Secure" : "";
 

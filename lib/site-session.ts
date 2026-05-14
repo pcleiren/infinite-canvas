@@ -52,6 +52,18 @@ export async function createAccessToken(password: string, ttlMs: number): Promis
   return `${message}.${toBase64Url(sig)}`;
 }
 
+export async function verifyAccessTokenAny(token: string | undefined, passwords: string[]): Promise<boolean> {
+  if (!token || passwords.length === 0) {
+    return false;
+  }
+  for (const pwd of passwords) {
+    if (await verifyAccessToken(token, pwd)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export async function verifyAccessToken(token: string | undefined, password: string): Promise<boolean> {
   if (!token || !password) {
     return false;

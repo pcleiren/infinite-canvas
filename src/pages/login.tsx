@@ -18,7 +18,7 @@ export function LoginPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ password: password.trim() }),
       });
       const data: unknown = await res.json().catch(() => ({}));
       if (!res.ok) {

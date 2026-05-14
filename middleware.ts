@@ -1,5 +1,6 @@
 import { next, rewrite } from "@vercel/functions";
-import { SITE_ACCESS_COOKIE, verifyAccessToken } from "./lib/site-session";
+import { getSitePasswordCandidates } from "./lib/auth-env";
+import { SITE_ACCESS_COOKIE, verifyAccessTokenAny } from "./lib/site-session";
 
 /** Alleen deze paden door Edge Middleware — voorkomt tweede pass op /index.html na rewrite. */
 export const config = {
@@ -7,14 +8,6 @@ export const config = {
 };
 
 const LOGIN_SPA_HEADER = "x-login-spa";
-
-function getPassword(): string | undefined {
-  return (
-    process.env.SITE_BASIC_AUTH_PASSWORD?.trim() ||
-    process.env.BASIC_AUTH_PASSWORD?.trim() ||
-    process.env.VERCEL_BASIC_AUTH_PASSWORD?.trim()
-  );
-}
 
 function parseCookieHeader(header: string | null, name: string): string | undefined {
   if (!header) {
@@ -40,7 +33,7 @@ function rewriteLoginToIndex(request: Request): Response {
 }
 
 export default async function middleware(request: Request): Promise<Response> {
-  const pwd = getPassword();
+  const candidates = getSitePasswordCandidates();
   const url = new URL(request.url);
   const path = url.pathname;
 
@@ -48,7 +41,7 @@ export default async function middleware(request: Request): Promise<Response> {
     return next();
   }
 
-  if (!pwd) {
+  if (candidates.length === 0) {
     if (path === "/login" || path.startsWith("/login/")) {
       return rewriteLoginToIndex(request);
     }
@@ -57,7 +50,7 @@ export default async function middleware(request: Request): Promise<Response> {
 
   if (path === "/index.html") {
     const t = parseCookieHeader(request.headers.get("cookie"), SITE_ACCESS_COOKIE);
-    if (await verifyAccessToken(t, pwd)) {
+    if (await verifyAccessTokenAny(t, candidates)) {
       return next();
     }
     return Response.redirect(new URL("/login", request.url).href, 302);
@@ -65,14 +58,14 @@ export default async function middleware(request: Request): Promise<Response> {
 
   if (path === "/login" || path.startsWith("/login/")) {
     const loginToken = parseCookieHeader(request.headers.get("cookie"), SITE_ACCESS_COOKIE);
-    if (await verifyAccessToken(loginToken, pwd)) {
+    if (await verifyAccessTokenAny(loginToken, candidates)) {
       return Response.redirect(new URL("/", request.url).href, 302);
     }
     return rewriteLoginToIndex(request);
   }
 
   const token = parseCookieHeader(request.headers.get("cookie"), SITE_ACCESS_COOKIE);
-  if (await verifyAccessToken(token, pwd)) {
+  if (await verifyAccessTokenAny(token, candidates)) {
     return next();
   }
 
