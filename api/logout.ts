@@ -16,11 +16,14 @@ function handleLogout(request: Request): Response {
   );
 }
 
-export default function handler(request: Request): Response {
-  try {
-    return handleLogout(request);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return Response.json({ ok: false, error: `Logout error: ${message}` }, { status: 500 });
-  }
-}
+/** Vercel “other / Vite” functions expect a Web handler object, not a bare default function. */
+export default {
+  fetch(request: Request): Response {
+    try {
+      return handleLogout(request);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      return Response.json({ ok: false, error: `Logout error: ${message}` }, { status: 500 });
+    }
+  },
+};

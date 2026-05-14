@@ -4,8 +4,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+async function readTextWithTimeout(res: Response, ms: number): Promise<string> {
+  return await Promise.race([
+    res.text(),
+    new Promise<string>((resolve) => {
+      globalThis.setTimeout(() => resolve(""), ms);
+    }),
+  ]);
+}
+
 async function readLoginErrorMessage(res: Response): Promise<string> {
-  const text = await res.text();
+  const text = await readTextWithTimeout(res, 5000);
   try {
     const data = JSON.parse(text) as { error?: unknown };
     if (typeof data.error === "string") {
@@ -31,7 +40,7 @@ export function LoginPage() {
     setError(null);
     setPending(true);
     const ctl = new AbortController();
-    const timeoutMs = 45_000;
+    const timeoutMs = 20_000;
     const timer = globalThis.setTimeout(() => ctl.abort(), timeoutMs);
     try {
       const loginUrl =
@@ -49,10 +58,9 @@ export function LoginPage() {
         setError(await readLoginErrorMessage(res));
         return;
       }
-      await res.json().catch(() => {
-        /* drain body so the connection can close cleanly */
-      });
-      globalThis.location.assign("/");
+      /* Do not await res.json()/res.text() here — reading the body can hang on some
+         proxies/CDNs even after status 200; navigation unloads the page anyway. */
+      globalThis.location.replace("/");
     } catch (err) {
       const name = err instanceof Error ? err.name : "";
       const isAbort =

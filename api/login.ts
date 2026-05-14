@@ -124,11 +124,14 @@ async function handleLogin(request: Request): Promise<Response> {
   );
 }
 
-export default async function handler(request: Request): Promise<Response> {
-  try {
-    return await handleLogin(request);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return Response.json({ ok: false, error: `Login error: ${message}` }, { status: 500 });
-  }
-}
+/** Vercel “other / Vite” functions expect a Web handler object, not a bare default function. */
+export default {
+  async fetch(request: Request): Promise<Response> {
+    try {
+      return await handleLogin(request);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      return Response.json({ ok: false, error: `Login error: ${message}` }, { status: 500 });
+    }
+  },
+};
