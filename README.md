@@ -23,6 +23,18 @@ npm install
 npm run dev
 ```
 
+## Eigen beelden (customizen)
+
+1. Zet bestanden in **`public/`**, bijvoorbeeld `public/artworks/mijn-foto.jpg`.
+2. Bewerk **`src/artworks/manifest.json`**: een array van objecten met **`url`** (pad vanaf site-root, bv. `artworks/mijn-foto.jpg`), **`width`** en **`height`** (pixelmaten voor het juiste aspect ratio).
+3. De canvas gebruikt nu **`public/artworks/portfolio/`** (PNG’s) met een automatisch opgebouwd manifest; eigen beelden: voeg PNG’s toe en werk `src/artworks/manifest.json` bij (of kopieer bestanden naar `portfolio/` en herbouw het manifest).
+
+Optioneel Art Institute-set opnieuw ophalen (schrijft naar `public/artworks/vendors/artic/` + `src/artworks/manifest.artic.generated.json`):
+
+```bash
+npx tsx scripts/download-artworks.ts
+```
+
 ## Tech Stack
 
 - React 19
@@ -33,7 +45,8 @@ npm run dev
 
 ## Credits
 
-- Images courtesy of [The Art Institute of Chicago](https://www.artic.edu/open-access/public-api)
+- Gebaseerd op het [Infinite Canvas](https://github.com/edoardolunardi/infinite-canvas)-project en de [Codrops-tutorial](https://tympanus.net/codrops/2026/01/07/infinite-canvas-building-a-seamless-pan-anywhere-image-space/).
+- Optioneel: beelden via [The Art Institute of Chicago Open Access API](https://www.artic.edu/open-access/public-api) (`scripts/download-artworks.ts`).
 
 ## Misc
 

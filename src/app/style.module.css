@@ -1,3 +1,14 @@
+.appShell {
+  position: relative;
+  min-height: 100svh;
+  isolation: isolate;
+  background-color: #141414;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.52), rgba(0, 0, 0, 0.52)), var(--hero-image);
+  background-repeat: no-repeat, no-repeat;
+  background-position: center center, center center;
+  background-size: cover, cover;
+}
+
 .errorContainer {
   display: flex;
   justify-content: center;

@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Optioneel gegenereerd door scripts/download-artworks.ts
+public/artworks/vendors/
+src/artworks/manifest.artic.generated.json

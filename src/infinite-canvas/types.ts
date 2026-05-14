@@ -16,7 +16,6 @@ export type InfiniteCanvasProps = {
   cameraFar?: number;
   fogNear?: number;
   fogFar?: number;
-  backgroundColor?: string;
   fogColor?: string;
 };
 

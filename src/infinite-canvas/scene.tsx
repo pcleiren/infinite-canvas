@@ -520,7 +520,6 @@ export function InfiniteCanvasScene({
   cameraFar = 500,
   fogNear = 120,
   fogFar = 320,
-  backgroundColor = "#ffffff",
   fogColor = "#ffffff",
 }: InfiniteCanvasProps) {
   const isTouchDevice = useIsTouchDevice();
@@ -537,10 +536,13 @@ export function InfiniteCanvasScene({
           camera={{ position: [0, 0, INITIAL_CAMERA_Z], fov: cameraFov, near: cameraNear, far: cameraFar }}
           dpr={dpr}
           flat
-          gl={{ antialias: false, powerPreference: "high-performance" }}
+          gl={{ alpha: true, antialias: false, powerPreference: "high-performance" }}
           className={styles.canvas}
+          onCreated={({ gl, scene }) => {
+            scene.background = null;
+            gl.setClearColor(0x000000, 0);
+          }}
         >
-          <color attach="background" args={[backgroundColor]} />
           <fog attach="fog" args={[fogColor, fogNear, fogFar]} />
           <SceneController media={media} onTextureProgress={onTextureProgress} />
           {showFps && <Stats className={styles.stats} />}

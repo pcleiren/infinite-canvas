@@ -1,10 +1,16 @@
+/**
+ * Optioneel: downloadt een Art Institute of Chicago-set (Barok-schilderijen).
+ * Output staat buiten `artworks/custom/` zodat je eigen manifest niet wordt overschreven.
+ * Na afloop: kopieer/rename `src/artworks/manifest.artic.generated.json` naar `manifest.json`
+ * of merge de entries handmatig.
+ */
 import fs from "node:fs";
 import path from "node:path";
 
 const API_BASE = "https://api.artic.edu/api/v1";
 const IIIF_BASE = "https://www.artic.edu/iiif/2";
-const OUTPUT_DIR = "./public/artworks";
-const MANIFEST_PATH = "./public/artworks/manifest.json";
+const OUTPUT_DIR = "./public/artworks/vendors/artic";
+const MANIFEST_PATH = "./src/artworks/manifest.artic.generated.json";
 
 const HEADERS = {
   "User-Agent":
@@ -115,7 +121,7 @@ async function main() {
     const filepath = path.join(OUTPUT_DIR, filename);
 
     const item: ManifestItem = {
-      url: `/artworks/${filename}`,
+      url: `artworks/vendors/artic/${filename}`,
       title: artwork.title,
       artist: artwork.artist_display || "Unknown Artist",
       year: artwork.date_display,
