@@ -1,4 +1,4 @@
-import { getSitePasswordCandidates } from "../lib/auth-env";
+import { getSitePasswordCandidates, normalizeSecret } from "../lib/auth-env";
 import {
   SITE_ACCESS_COOKIE,
   SESSION_TTL_MS,
@@ -10,7 +10,11 @@ export default async function handler(request: Request): Promise<Response> {
   const candidates = getSitePasswordCandidates();
   if (candidates.length === 0) {
     return Response.json(
-      { ok: false, error: "Geen site-wachtwoord in omgeving (SITE_ACCESS_PASSWORD of SITE_BASIC_AUTH_PASSWORD / …)." },
+      {
+        ok: false,
+        error:
+          "No site password is configured. Set SITE_ACCESS_PASSWORD, SITE_BASIC_AUTH_PASSWORD, BASIC_AUTH_PASSWORD, or VERCEL_BASIC_AUTH_PASSWORD.",
+      },
       { status: 503 }
     );
   }
@@ -23,12 +27,12 @@ export default async function handler(request: Request): Promise<Response> {
   try {
     body = await request.json();
   } catch {
-    return Response.json({ ok: false, error: "Ongeldige JSON." }, { status: 400 });
+    return Response.json({ ok: false, error: "Invalid JSON body." }, { status: 400 });
   }
 
   const raw =
     typeof body === "object" && body !== null && "password" in body ? String((body as { password: unknown }).password) : "";
-  const password = raw.trim();
+  const password = normalizeSecret(raw);
 
   let matched: string | undefined;
   for (const c of candidates) {
@@ -39,7 +43,7 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   if (!matched) {
-    return Response.json({ ok: false, error: "Onjuist wachtwoord." }, { status: 401 });
+    return Response.json({ ok: false, error: "Incorrect password." }, { status: 401 });
   }
 
   const token = await createAccessToken(matched, SESSION_TTL_MS);

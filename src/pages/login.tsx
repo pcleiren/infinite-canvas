@@ -14,7 +14,11 @@ export function LoginPage() {
     setError(null);
     setPending(true);
     try {
-      const res = await fetch("/api/login", {
+      const loginUrl =
+        typeof globalThis.location !== "undefined"
+          ? new URL("/api/login", globalThis.location.origin).toString()
+          : "/api/login";
+      const res = await fetch(loginUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -25,18 +29,18 @@ export function LoginPage() {
         const msg =
           typeof data === "object" && data !== null && "error" in data && typeof (data as { error: unknown }).error === "string"
             ? (data as { error: string }).error
-            : "Inloggen mislukt.";
+            : "Sign-in failed.";
         setError(msg);
         return;
       }
-      window.location.assign("/");
+      globalThis.location.assign("/");
     } finally {
       setPending(false);
     }
   }
 
   return (
-    <div className="dark min-h-svh bg-background font-sans text-foreground antialiased">
+    <div className="dark min-h-svh bg-background font-sans text-foreground antialiased" lang="en">
       <div className="flex min-h-svh items-center justify-center px-5 py-10 sm:px-8">
         <Card className="w-full max-w-[min(100%,32rem)] border-zinc-800 bg-zinc-950 shadow-2xl sm:max-w-[36rem]">
           <CardHeader className="space-y-3 px-8 pb-2 pt-10 sm:px-10 sm:pt-12">
@@ -44,14 +48,14 @@ export function LoginPage() {
               Eddie Laan
             </CardTitle>
             <CardDescription className="text-[15px] leading-relaxed text-zinc-400 sm:text-[17px]">
-              Voer het site-wachtwoord in om verder te gaan.
+              Enter the site password to continue.
             </CardDescription>
           </CardHeader>
           <CardContent className="px-8 pb-10 pt-2 sm:px-10 sm:pb-12">
             <form className="space-y-6" onSubmit={onSubmit}>
               <div className="space-y-3">
                 <Label htmlFor="site-password" className="text-[15px] sm:text-[16px]">
-                  Wachtwoord
+                  Password
                 </Label>
                 <Input
                   id="site-password"
@@ -72,7 +76,7 @@ export function LoginPage() {
                 className="h-12 w-full text-[16px] font-medium sm:h-14 sm:text-[17px]"
                 disabled={pending}
               >
-                {pending ? "Bezig…" : "Aanmelden"}
+                {pending ? "Signing in…" : "Sign in"}
               </Button>
             </form>
           </CardContent>
