@@ -35,6 +35,18 @@ Optioneel Art Institute-set opnieuw ophalen (schrijft naar `public/artworks/vend
 npx tsx scripts/download-artworks.ts
 ```
 
+## Vercel (hosting + wachtwoord)
+
+1. **Project op Vercel**: importeer deze GitHub-repo in [Vercel](https://vercel.com/new) (of `npx vercel` vanaf je machine met Node 20–24 als de CLI klaagt over je Node-versie).
+2. **Build**: standaard `npm run build`, outputmap **`dist`** (zie `vercel.json`).
+3. **Optioneel wachtwoord (HTTP Basic Auth)** op alle routes:
+   - In Vercel: **Project → Settings → Environment Variables**
+   - Zet **`VERCEL_BASIC_AUTH_PASSWORD`** op het gewenste wachtwoord (verplicht om beveiliging aan te zetten).
+   - Optioneel: **`VERCEL_BASIC_AUTH_USER`** (default: `eddie`).
+   - Zonder `VERCEL_BASIC_AUTH_PASSWORD` blijft de site **openbaar** (handig voor testen).
+
+De browser vraagt dan om gebruikersnaam en wachtwoord voordat HTML, JS en `public`-assets worden geladen.
+
 ## Tech Stack
 
 - React 19
