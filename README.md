@@ -76,6 +76,7 @@ Of zip: `npm run pack:local` → **`infinite-canvas-local.zip`**.
 - Map: `…/infinite-canvas/dist-local/`
 - Eén gebundeld script (geen `type="module"`), hash-routing (`#/`)
 - Login/API werkt hier niet; je ziet direct de canvas
+- Portfoliofoto’s in de 3D-ruimte: op **`file://`** laden sommige browsers die beperkt; gebruik bij twijfel **`npm run open:local`** (HTTP, alle afbeeldingen)
 - Voor Vercel/FTP blijf je **`npm run build`** → **`dist/`** gebruiken
 
 **Als login niet werkt:** controleer stap 3 (Output Directory) en of `SITE_ACCESS_PASSWORD` op Production staat.
