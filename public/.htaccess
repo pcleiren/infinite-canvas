@@ -1,0 +1,10 @@
+# SPA routing for Apache (typical shared FTP hosting).
+# Upload the contents of dist/ to your web root (often public_html).
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>

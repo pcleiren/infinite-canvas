@@ -12,7 +12,9 @@
     "lint": "npm run check:biome",
     "format": "biome check --write --unsafe",
     "preview": "vite preview --host",
-    "preview:dist": "npm run build && vite preview --host --port 4173"
+    "preview:dist": "npm run build && vite preview --host --port 4173",
+    "build:ftp": "npm run build",
+    "pack:ftp": "npm run build && rm -f infinite-canvas-ftp.zip && cd dist && zip -r ../infinite-canvas-ftp.zip ."
   },
   "dependencies": {
     "@radix-ui/react-slot": "1.2.3",

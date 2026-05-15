@@ -49,6 +49,14 @@ npx tsx scripts/download-artworks.ts
 
 **Lokaal bekijken (alleen frontend):** `npm run preview:dist` — opent de productie-build op poort **4173**. Login/API werken alleen met `npx vercel dev` of na deploy op Vercel.
 
+## Eigen webhosting (FTP / statisch)
+
+1. **Build:** `npm run build` (alias: `npm run build:ftp`) → map **`dist/`**.
+2. **Zip (optioneel):** `npm run pack:ftp` → **`infinite-canvas-ftp.zip`** in de projectroot.
+3. **Upload:** upload **alle inhoud** van `dist/` naar je webroot (bijv. `public_html`), niet de map `dist` zelf.
+4. **Apache:** `.htaccess` uit `public/` wordt mee gekopieerd voor SPA-routes (`/login`, enz.). Staat de site in een **submap**, pas `RewriteBase` in `.htaccess` aan (bijv. `/mijn-map/`).
+5. **Let op:** op pure statische hosting werken **geen** Vercel-middleware en **geen** `/api/login` — de custom login en cookie-beveiliging vallen weg; de canvas is dan **openbaar** tenzij je hosting zelf wachtwoordbeveiliging biedt (bijv. Apache `.htpasswd`, panel “Directory privacy”).
+
 **Als login niet werkt:** controleer stap 3 (Output Directory) en of `SITE_ACCESS_PASSWORD` op Production staat.
 
 ## Tech Stack
