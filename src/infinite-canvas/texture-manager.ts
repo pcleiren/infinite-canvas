@@ -1,3 +1,4 @@
+import { resolveAssetUrl } from "@/lib/resolve-asset-url";
 import * as THREE from "three";
 import type { MediaItem } from "./types";
 
@@ -11,7 +12,7 @@ const isTextureLoaded = (tex: THREE.Texture): boolean => {
 };
 
 export const getTexture = (item: MediaItem, onLoad?: (texture: THREE.Texture) => void): THREE.Texture => {
-  const key = item.url;
+  const key = resolveAssetUrl(item.url);
   const existing = textureCache.get(key);
 
   if (existing) {

@@ -5,16 +5,10 @@ import { Frame } from "~/src/frame";
 import { InfiniteCanvas } from "~/src/infinite-canvas";
 import type { MediaItem } from "~/src/infinite-canvas/types";
 import { PageLoader } from "~/src/loader";
+import { resolveAssetUrl } from "@/lib/resolve-asset-url";
 
 function heroPhotoHref(): string {
-  if (typeof window !== "undefined") {
-    try {
-      return new URL("eddie-laan-hero.png", window.location.href).href;
-    } catch {
-      /* fall through */
-    }
-  }
-  return `${import.meta.env.BASE_URL}eddie-laan-hero.png`;
+  return resolveAssetUrl("eddie-laan-hero.png");
 }
 
 export function CanvasApp() {

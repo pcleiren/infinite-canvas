@@ -12,15 +12,17 @@ function offlineHtmlPlugin(): Plugin {
     transformIndexHtml: {
       order: "post",
       handler(html) {
+        const boot = `<script>document.documentElement.className="js";</script>`;
         return html
           .replace(
             /<script type="module" crossorigin src="(\.\/assets\/app\.js)"><\/script>/,
-            '<script src="$1"></script>',
+            `${boot}<script src="$1"></script>`,
           )
           .replace(
             /<link rel="stylesheet" crossorigin href="(\.\/assets\/[^"]+)">/,
             '<link rel="stylesheet" href="$1">',
-          );
+          )
+          .replace(/\s*<script>\s*document\.documentElement\.className = 'js';\s*<\/script>/, "");
       },
     },
   };
