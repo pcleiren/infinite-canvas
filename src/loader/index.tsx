@@ -1,9 +1,17 @@
 import * as React from "react";
 import styles from "./style.module.css";
 
-export function PageLoader({ progress }: { progress: number }) {
+export function PageLoader({
+  progress,
+  maxWaitMs,
+}: {
+  progress: number;
+  /** Dismiss loader after this time even if progress stays below 100 (offline / file://). */
+  maxWaitMs?: number;
+}) {
   const [show, setShow] = React.useState(true);
   const [minTimeElapsed, setMinTimeElapsed] = React.useState(false);
+  const [maxWaitElapsed, setMaxWaitElapsed] = React.useState(false);
   const visualRef = React.useRef(0);
   const [visualProgress, setVisualProgress] = React.useState(0);
 
@@ -11,6 +19,14 @@ export function PageLoader({ progress }: { progress: number }) {
     const timer = setTimeout(() => setMinTimeElapsed(true), 1500);
     return () => clearTimeout(timer);
   }, []);
+
+  React.useEffect(() => {
+    if (maxWaitMs === undefined) {
+      return;
+    }
+    const timer = setTimeout(() => setMaxWaitElapsed(true), maxWaitMs);
+    return () => clearTimeout(timer);
+  }, [maxWaitMs]);
 
   React.useEffect(() => {
     let raf: number;
@@ -34,18 +50,21 @@ export function PageLoader({ progress }: { progress: number }) {
     return () => cancelAnimationFrame(raf);
   }, [progress]);
 
+  const loadComplete = progress === 100 && visualProgress >= 99.5;
+  const shouldDismiss = minTimeElapsed && (loadComplete || maxWaitElapsed);
+
   React.useEffect(() => {
-    if (minTimeElapsed && progress === 100 && visualProgress >= 99.5) {
+    if (shouldDismiss) {
       const t = setTimeout(() => setShow(false), 200);
       return () => clearTimeout(t);
     }
-  }, [minTimeElapsed, progress, visualProgress]);
+  }, [shouldDismiss]);
 
   if (!show) {
     return null;
   }
 
-  const isHidden = minTimeElapsed && progress === 100 && visualProgress >= 99.5;
+  const isHidden = shouldDismiss;
 
   return (
     <div className={`${styles.overlay} ${isHidden ? styles.hidden : styles.visible}`}>

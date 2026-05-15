@@ -310,6 +310,19 @@ function SceneController({ media, onTextureProgress }: { media: MediaItem[]; onT
   }, [progress, onTextureProgress]);
 
   React.useEffect(() => {
+    if (import.meta.env.VITE_OFFLINE_BUILD !== "true") {
+      return;
+    }
+    const timeout = setTimeout(() => {
+      if (maxProgress.current < 100) {
+        maxProgress.current = 100;
+        onTextureProgress?.(100);
+      }
+    }, 7500);
+    return () => clearTimeout(timeout);
+  }, [onTextureProgress]);
+
+  React.useEffect(() => {
     const canvas = gl.domElement;
     const s = state.current;
     canvas.style.cursor = "grab";

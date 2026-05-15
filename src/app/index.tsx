@@ -11,6 +11,8 @@ function heroPhotoHref(): string {
   return resolveAssetUrl("eddie-laan-hero.png");
 }
 
+const isOfflineBuild = import.meta.env.VITE_OFFLINE_BUILD === "true";
+
 export function CanvasApp() {
   const [media] = React.useState<MediaItem[]>(manifest);
   const [textureProgress, setTextureProgress] = React.useState(0);
@@ -28,7 +30,7 @@ export function CanvasApp() {
       </div>
       <div className={styles.appContent}>
         <Frame />
-        <PageLoader progress={textureProgress} />
+        <PageLoader progress={textureProgress} maxWaitMs={isOfflineBuild ? 8000 : undefined} />
         <InfiniteCanvas media={media} onTextureProgress={setTextureProgress} />
       </div>
     </div>

@@ -5,6 +5,7 @@ import type { MediaItem } from "./types";
 const textureCache = new Map<string, THREE.Texture>();
 const loadCallbacks = new Map<string, Set<(tex: THREE.Texture) => void>>();
 const httpLoader = new THREE.TextureLoader();
+const loadingManager = THREE.DefaultLoadingManager;
 
 function usesFileSafeImageLoader(): boolean {
   return (
@@ -13,11 +14,17 @@ function usesFileSafeImageLoader(): boolean {
   );
 }
 
-function configureTexture(tex: THREE.Texture): void {
-  tex.minFilter = THREE.LinearMipmapLinearFilter;
-  tex.magFilter = THREE.LinearFilter;
-  tex.generateMipmaps = true;
-  tex.anisotropy = 4;
+function configureTexture(tex: THREE.Texture, fileSafe: boolean): void {
+  if (fileSafe) {
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    tex.generateMipmaps = false;
+  } else {
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    tex.generateMipmaps = true;
+    tex.anisotropy = 4;
+  }
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.needsUpdate = true;
 }
@@ -36,13 +43,17 @@ function loadTextureViaImage(
   const texture = new THREE.Texture();
   const image = new Image();
 
+  loadingManager.itemStart(url);
+
   image.onload = () => {
     texture.image = image;
-    configureTexture(texture);
+    configureTexture(texture, true);
+    loadingManager.itemEnd(url);
     onLoad(texture);
   };
 
   image.onerror = () => {
+    loadingManager.itemError(url);
     onError(new Error(`Image load failed: ${url}`));
   };
 
@@ -51,8 +62,10 @@ function loadTextureViaImage(
 }
 
 function startLoad(key: string): THREE.Texture {
+  const fileSafe = usesFileSafeImageLoader();
+
   const finish = (tex: THREE.Texture) => {
-    configureTexture(tex);
+    configureTexture(tex, fileSafe);
     loadCallbacks.get(key)?.forEach((cb) => {
       try {
         cb(tex);
@@ -68,7 +81,7 @@ function startLoad(key: string): THREE.Texture {
     loadCallbacks.delete(key);
   };
 
-  if (usesFileSafeImageLoader()) {
+  if (fileSafe) {
     return loadTextureViaImage(key, finish, fail);
   }
 
