@@ -62,7 +62,11 @@ export function LoginPage() {
       /* Do not await res.json()/res.text() here — reading the body can hang on some
          proxies/CDNs even after status 200; navigation unloads the page anyway. */
       navigating = true;
-      globalThis.location.replace("/");
+      if (import.meta.env.VITE_OFFLINE_BUILD === "true") {
+        globalThis.location.hash = "#/";
+      } else {
+        globalThis.location.replace("/");
+      }
     } catch (err) {
       const name = err instanceof Error ? err.name : "";
       const isAbort =

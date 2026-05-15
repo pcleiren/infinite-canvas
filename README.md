@@ -57,6 +57,27 @@ npx tsx scripts/download-artworks.ts
 4. **Apache:** `.htaccess` uit `public/` wordt mee gekopieerd voor SPA-routes (`/login`, enz.). Staat de site in een **submap**, pas `RewriteBase` in `.htaccess` aan (bijv. `/mijn-map/`).
 5. **Let op:** op pure statische hosting werken **geen** Vercel-middleware en **geen** `/api/login` — de custom login en cookie-beveiliging vallen weg; de canvas is dan **openbaar** tenzij je hosting zelf wachtwoordbeveiliging biedt (bijv. Apache `.htpasswd`, panel “Directory privacy”).
 
+## Lokaal openen (dubbelklik / `file://`)
+
+De normale map **`dist/`** werkt **niet** als je `index.html` dubbelklikt (browsers blokkeren ES-modules via `file://`).
+
+Gebruik de **offline-build**:
+
+```bash
+npm run build:local
+```
+
+Open daarna:
+
+**`dist-local/index.html`** (dubbelklik in Finder)
+
+Of zip: `npm run pack:local` → **`infinite-canvas-local.zip`**.
+
+- Map: `…/infinite-canvas/dist-local/`
+- Eén gebundeld script (geen `type="module"`), hash-routing (`#/`)
+- Login/API werkt hier niet; je ziet direct de canvas
+- Voor Vercel/FTP blijf je **`npm run build`** → **`dist/`** gebruiken
+
 **Als login niet werkt:** controleer stap 3 (Output Directory) en of `SITE_ACCESS_PASSWORD` op Production staat.
 
 ## Tech Stack
