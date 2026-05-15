@@ -1,4 +1,4 @@
-import { SITE_ACCESS_COOKIE } from "./site-session";
+import { SITE_ACCESS_COOKIE } from "./site-session.js";
 
 export { SITE_ACCESS_COOKIE };
 

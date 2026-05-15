@@ -1,6 +1,6 @@
 import { next, rewrite } from "@vercel/functions";
-import { getSitePasswordCandidates } from "./lib/auth-env";
-import { SITE_ACCESS_COOKIE, verifyAccessTokenAny } from "./lib/site-session";
+import { getSitePasswordCandidates } from "./lib/auth-env.js";
+import { SITE_ACCESS_COOKIE, verifyAccessTokenAny } from "./lib/site-session.js";
 
 /**
  * Paths that run Edge Middleware. Include `/api/*` so we can immediately `next()`

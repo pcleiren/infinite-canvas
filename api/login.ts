@@ -1,10 +1,10 @@
-import { getSitePasswordCandidates, normalizeSecret } from "../lib/auth-env";
-import { buildSetAccessCookieHeader } from "../lib/auth-cookie";
+import { getSitePasswordCandidates, normalizeSecret } from "../lib/auth-env.js";
+import { buildSetAccessCookieHeader } from "../lib/auth-cookie.js";
 import {
   createAccessToken,
   SESSION_TTL_MS,
   timingSafeEqualUtf8,
-} from "../lib/site-session";
+} from "../lib/site-session.js";
 
 async function handleLogin(request: Request): Promise<Response> {
   const candidates = getSitePasswordCandidates();

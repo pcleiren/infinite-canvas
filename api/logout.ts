@@ -1,4 +1,4 @@
-import { buildClearAccessCookieHeader } from "../lib/auth-cookie";
+import { buildClearAccessCookieHeader } from "../lib/auth-cookie.js";
 
 function handleLogout(request: Request): Response {
   if (request.method !== "POST" && request.method !== "GET") {
