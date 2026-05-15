@@ -12,17 +12,29 @@ function offlineHtmlPlugin(): Plugin {
     transformIndexHtml: {
       order: "post",
       handler(html) {
-        const boot = `<script>document.documentElement.className="js";</script>`;
-        return html
+        let out = html
           .replace(
-            /<script type="module" crossorigin src="(\.\/assets\/app\.js)"><\/script>/,
-            `${boot}<script src="$1"></script>`,
+            /<script type="module" crossorigin src="\.\/assets\/app\.js"><\/script>\s*/i,
+            "",
           )
+          .replace(
+            /<script>document\.documentElement\.className="js";<\/script>\s*<script src="\.\/assets\/app\.js"><\/script>\s*/i,
+            "",
+          )
+          .replace(/\s*<script>\s*document\.documentElement\.className = 'js';\s*<\/script>\s*/g, "")
           .replace(
             /<link rel="stylesheet" crossorigin href="(\.\/assets\/[^"]+)">/,
             '<link rel="stylesheet" href="$1">',
-          )
-          .replace(/\s*<script>\s*document\.documentElement\.className = 'js';\s*<\/script>/, "");
+          );
+
+        if (!out.includes('defer src="./assets/app.js"')) {
+          out = out.replace(
+            "</body>",
+            '  <script>document.documentElement.className="js";</script>\n  <script defer src="./assets/app.js"></script>\n</body>',
+          );
+        }
+
+        return out;
       },
     },
   };

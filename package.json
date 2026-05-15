@@ -16,7 +16,8 @@
     "build:ftp": "npm run build",
     "pack:ftp": "npm run build && rm -f infinite-canvas-ftp.zip && cd dist && zip -r ../infinite-canvas-ftp.zip .",
     "build:local": "tsc -b && vite build --config vite.config.offline.ts",
-    "pack:local": "npm run build:local && rm -f infinite-canvas-local.zip && cd dist-local && zip -r ../infinite-canvas-local.zip ."
+    "pack:local": "npm run build:local && rm -f infinite-canvas-local.zip && cd dist-local && zip -r ../infinite-canvas-local.zip .",
+    "open:local": "npm run build:local && node scripts/serve-local.mjs"
   },
   "dependencies": {
     "@radix-ui/react-slot": "1.2.3",
