@@ -39,6 +39,7 @@ export function LoginPage() {
     e.preventDefault();
     setError(null);
     setPending(true);
+    let navigating = false;
     const ctl = new AbortController();
     const timeoutMs = 20_000;
     const timer = globalThis.setTimeout(() => ctl.abort(), timeoutMs);
@@ -60,6 +61,7 @@ export function LoginPage() {
       }
       /* Do not await res.json()/res.text() here — reading the body can hang on some
          proxies/CDNs even after status 200; navigation unloads the page anyway. */
+      navigating = true;
       globalThis.location.replace("/");
     } catch (err) {
       const name = err instanceof Error ? err.name : "";
@@ -72,7 +74,9 @@ export function LoginPage() {
       }
     } finally {
       globalThis.clearTimeout(timer);
-      setPending(false);
+      if (!navigating) {
+        setPending(false);
+      }
     }
   }
 

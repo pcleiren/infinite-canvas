@@ -40,17 +40,16 @@ npx tsx scripts/download-artworks.ts
 1. **Project op Vercel**: importeer deze GitHub-repo in [Vercel](https://vercel.com/new) (of `npx vercel` met Node 20–24 als de CLI over je Node-versie klaagt).
 2. **Build**: **Framework preset = Vite** (staat in `vercel.json` als `"framework": "vite"`). Build-commando blijft **`npm run build`** (Vite schrijft naar `dist`).
 3. **Belangrijk — anders werkt geen wachtwoord via `middleware.ts`:** onder **Project → Settings → General → Build & Output** mag **Output Directory** niet handmatig op `dist` staan als dat “alleen statische files” oplevert zonder Edge Middleware. Laat **Output Directory leeg** (default voor Vite), zodat Vercel de volledige Vite-build inclusief **Routing Middleware** gebruikt.
-4. **HTTP Basic Auth** (root `middleware.ts`):
+4. **Site-wachtwoord** (custom login op `/login`, cookie `site_access`):
    - **Settings → Environment Variables**
-   - Aanbevolen: **`SITE_BASIC_AUTH_PASSWORD`** (wachtwoord). Ook ondersteund: `BASIC_AUTH_PASSWORD` of (legacy) `VERCEL_BASIC_AUTH_PASSWORD`.
-   - Optioneel gebruikersnaam: **`SITE_BASIC_AUTH_USER`** (default: `eddie`), of `BASIC_AUTH_USER` / `VERCEL_BASIC_AUTH_USER`.
+   - Aanbevolen: **`SITE_ACCESS_PASSWORD`**. Ook ondersteund (legacy): `SITE_BASIC_AUTH_PASSWORD`, `BASIC_AUTH_PASSWORD`, `VERCEL_BASIC_AUTH_PASSWORD`.
    - Zet de variabelen op **Production** én **Preview** als je alle deployment-URL’s wilt afschermen.
-   - Na wijzigingen: **Deployments → Redeploy** zodat de nieuwe env zichtbaar is op de edge.
-   - Zonder wachtwoord-env blijft de site openbaar.
+   - Na wijzigingen: **Deployments → Redeploy** zodat de nieuwe env zichtbaar is op de edge én in serverless functions (`/api/login`).
+   - Zonder wachtwoord-env blijft de site openbaar (geen redirect naar `/login`).
 
-**Als er nog steeds geen browser-login komt:** controleer stap 3 (Output Directory). Alternatief op Vercel zelf: **Password Protection** onder *Deployment Protection* (beschikbaar op o.a. Pro) — zie [Password Protection](https://vercel.com/docs/deployment-protection/methods-to-protect-deployments/password-protection).
+**Lokaal bekijken (alleen frontend):** `npm run preview:dist` — opent de productie-build op poort **4173**. Login/API werken alleen met `npx vercel dev` of na deploy op Vercel.
 
-De browser vraagt bij Basic Auth om gebruikersnaam en wachtwoord voordat HTML, JS en `public`-assets worden geladen.
+**Als login niet werkt:** controleer stap 3 (Output Directory) en of `SITE_ACCESS_PASSWORD` op Production staat.
 
 ## Tech Stack
 

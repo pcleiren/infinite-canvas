@@ -1,71 +1,10 @@
-/**
- * Self-contained login handler (no `../lib` imports) so Vercel bundles all code
- * into the serverless function. Keep crypto logic aligned with `lib/site-session.ts`.
- */
-const enc = new TextEncoder();
-const SITE_ACCESS_COOKIE = "site_access";
-const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-
-function normalizeSecret(value: string): string {
-  return value.replace(/^\uFEFF/, "").trim();
-}
-
-function getSitePasswordCandidates(): string[] {
-  const raw = [
-    process.env.SITE_ACCESS_PASSWORD,
-    process.env.SITE_BASIC_AUTH_PASSWORD,
-    process.env.BASIC_AUTH_PASSWORD,
-    process.env.VERCEL_BASIC_AUTH_PASSWORD,
-  ];
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const v of raw) {
-    if (v === undefined || v === null) {
-      continue;
-    }
-    const t = normalizeSecret(String(v));
-    if (t && !seen.has(t)) {
-      seen.add(t);
-      out.push(t);
-    }
-  }
-  return out;
-}
-
-function timingSafeEqualUtf8(a: string, b: string): boolean {
-  const ae = enc.encode(a);
-  const be = enc.encode(b);
-  if (ae.length !== be.length) {
-    return false;
-  }
-  let x = 0;
-  for (let i = 0; i < ae.length; i++) {
-    x |= ae[i]! ^ be[i]!;
-  }
-  return x === 0;
-}
-
-async function hmacKeyFromPassword(password: string): Promise<CryptoKey> {
-  const digest = await crypto.subtle.digest("SHA-256", enc.encode(password));
-  return crypto.subtle.importKey("raw", digest, { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]);
-}
-
-function toBase64Url(buf: ArrayBuffer): string {
-  const bytes = new Uint8Array(buf);
-  let bin = "";
-  for (let i = 0; i < bytes.length; i++) {
-    bin += String.fromCharCode(bytes[i]!);
-  }
-  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
-
-async function createAccessToken(password: string, ttlMs: number): Promise<string> {
-  const exp = Date.now() + ttlMs;
-  const message = String(exp);
-  const key = await hmacKeyFromPassword(password);
-  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(message));
-  return `${message}.${toBase64Url(sig)}`;
-}
+import { getSitePasswordCandidates, normalizeSecret } from "../lib/auth-env";
+import { buildSetAccessCookieHeader } from "../lib/auth-cookie";
+import {
+  createAccessToken,
+  SESSION_TTL_MS,
+  timingSafeEqualUtf8,
+} from "../lib/site-session";
 
 async function handleLogin(request: Request): Promise<Response> {
   const candidates = getSitePasswordCandidates();
@@ -111,14 +50,13 @@ async function handleLogin(request: Request): Promise<Response> {
 
   const token = await createAccessToken(matched, SESSION_TTL_MS);
   const maxAge = Math.floor(SESSION_TTL_MS / 1000);
-  const secure = process.env.VERCEL === "1" ? "; Secure" : "";
 
   return Response.json(
     { ok: true },
     {
       status: 200,
       headers: {
-        "Set-Cookie": `${SITE_ACCESS_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure}`,
+        "Set-Cookie": buildSetAccessCookieHeader(token, maxAge),
       },
     }
   );

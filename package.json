@@ -11,7 +11,8 @@
     "check": "npm run check:types && npm run check:biome",
     "lint": "npm run check:biome",
     "format": "biome check --write --unsafe",
-    "preview": "vite preview"
+    "preview": "vite preview --host",
+    "preview:dist": "npm run build && vite preview --host --port 4173"
   },
   "dependencies": {
     "@radix-ui/react-slot": "1.2.3",
